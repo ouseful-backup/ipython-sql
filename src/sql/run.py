@@ -240,11 +240,21 @@ def interpret_rowcount(rowcount):
 
 def run(conn, sql, config, user_namespace):
     if sql.strip():
+        translist=[]
         for statement in sqlparse.split(sql):
             txt = sqlalchemy.sql.text(statement)
-            result = conn.session.execute(txt, user_namespace)
+            #For now, we can only cope with transactions within a single cell
+            if txt.text=='BEGIN;':
+                translist.append(conn.session.begin())
+            elif txt.text=='ROLLBACK;':
+                translist.pop().rollback()
+            elif txt.text=='COMMIT;':
+                translist.pop().commit()
+            else: result = conn.session.execute(txt, user_namespace)
             if result and config.feedback:
                 print(interpret_rowcount(result.rowcount))
+        #If we wanted to force the commits:
+        #while len(translist)>0: translist.pop().commit()
         resultset = ResultSet(result, statement, config)
         if config.autopandas:
             return resultset.DataFrame()
