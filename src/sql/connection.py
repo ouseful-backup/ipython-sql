@@ -46,11 +46,7 @@ class Connection(object):
         return name
     @classmethod
     def begin(self):
-        try:
-            self.transactions.append(self.session.begin())
-        except:
-            self.transactions=[]
-            self.transactions.append(self.session.begin())
+        self.transactions.append(self.session.begin())
     @classmethod   
     def rollback(self):
         self.transactions.pop().rollback()
