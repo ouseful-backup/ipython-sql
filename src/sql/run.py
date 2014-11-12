@@ -250,9 +250,10 @@ def run(conn, sql, config, user_namespace):
                 translist.pop().rollback()
             elif txt.text=='COMMIT;':
                 translist.pop().commit()
-            else: result = conn.session.execute(txt, user_namespace)
-            if result and config.feedback:
-                print(interpret_rowcount(result.rowcount))
+            else:
+                result = conn.session.execute(txt, user_namespace)
+                if result and config.feedback:
+                    print(interpret_rowcount(result.rowcount))
         #If we wanted to force the commits:
         #while len(translist)>0: translist.pop().commit()
         resultset = ResultSet(result, statement, config)
