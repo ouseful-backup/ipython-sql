@@ -46,10 +46,10 @@ class Connection(object):
         return name
     @classmethod
     def begin(self):
-        self.transacations.append(self.session.begin())
+        self.transactions.append(self.session.begin())
     @classmethod   
     def rollback(self):
-        self.transacations.pop().rollback()
+        self.transactions.pop().rollback()
     @classmethod    
     def commit(self):
-        self.transacations.pop().commit()
+        self.transactions.pop().commit()
