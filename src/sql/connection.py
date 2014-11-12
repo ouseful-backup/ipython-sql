@@ -16,6 +16,7 @@ class Connection(object):
         self.metadata = sqlalchemy.MetaData(bind=engine)
         self.name = self.assign_name(engine)
         self.session = engine.connect() 
+        self.transactions=[]
         self.connections[self.name] = self
         self.connections[str(self.metadata.bind.url)] = self
         Connection.current = self
@@ -43,3 +44,12 @@ class Connection(object):
             name = '%s_%d' % (core_name, incrementer)
             incrementer += 1
         return name
+    @classmethod
+    def begin(self):
+        self.transacations.append(self.session.begin())
+    @classmethod   
+    def rollback(self):
+        self.transacations.pop().rollback()
+    @classmethod    
+    def commit(self):
+        self.transacations.pop().commit()
