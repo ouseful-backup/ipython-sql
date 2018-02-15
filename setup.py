@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
-import sys, os
+import os
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README.rst')).read()
 NEWS = open(os.path.join(here, 'NEWS.txt')).read()
 
 
-version = '0.3.4'
+version = '0.3.9'
 
 install_requires = [
     'prettytable',
@@ -14,6 +14,8 @@ install_requires = [
     'sqlalchemy>=0.6.7',
     'sqlparse',
     'six',
+    'pgspecial',
+    'ipython-genutils>=0.1.0',
 ]
 
 
@@ -33,7 +35,7 @@ setup(name='ipython-sql',
     keywords='database ipython postgresql mysql',
     author='Catherine Devlin',
     author_email='catherine.devlin@gmail.com',
-    url='pypi.python.org/pypi/ipython-sql',
+    url='https://pypi.python.org/pypi/ipython-sql',
     license='MIT',
     packages=find_packages('src'),
     package_dir = {'': 'src'},

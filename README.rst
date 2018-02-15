@@ -64,6 +64,20 @@ an existing connection by username@database
     ======================
     Poet       733
 
+If no connect string is supplied, ``5sql`` will provide a list of existing connections;
+however, if no connections have yet been made and the environment variable ``DATABASE_URL``
+is available, that will be used.
+
+For secure access, you may dynamically access your credentials (e.g. from your system environment or `getpass.getpass`) to avoid storing your password in the notebook itself. Use the `$` before any variable to access it in your `%sql` command.
+
+.. code-block:: python
+
+    In [11]: user = os.getenv('SOME_USER')
+       ....: password = os.getenv('SOME_PASSWORD')
+       ....: connection_string = "postgresql://{user}:{password}@localhost/some_database".format(user=user, password=password)
+       ....: %sql $connection_string
+    Out[11]: u'Connected: some_user@some_database'
+
 You may use multiple SQL statements inside a single cell, but you will
 only see any query results from the last of them, so this really only
 makes sense for statements with no output
@@ -99,6 +113,30 @@ leftmost column serving as key, for unique values.
     In [15]: result['richard2']
     Out[15]: (u'richard2', u'Richard II', u'History of Richard II', 1595, u'h', None, u'Moby', 22411, 628)
 
+Results can also be retrieved as an iterator of dictionaries (``result.dicts()``)
+or a single dictionary with a tuple of scalar values per key (``result.dict()``)
+
+Assignment
+----------
+
+Ordinary IPython assignment works for single-line `%sql` queries:
+
+.. code-block:: python
+
+    In [16]: works = %sql SELECT title, year FROM work
+    43 rows affected.
+
+The `<<` operator captures query results in a local variable, and
+can be used in multi-line ``%%sql``:
+
+.. code-block:: python
+
+    In [17]: %%sql works << SELECT title, year
+        ...: FROM work
+        ...:
+    43 rows affected.
+    Returning data to local variable works
+
 Connecting
 ----------
 
@@ -110,6 +148,7 @@ Some example connection strings::
     oracle://scott:tiger@127.0.0.1:1521/sidname
     sqlite://
     sqlite:///foo.db
+    mssql+pyodbc://username:password@host/database?driver=SQL+Server+Native+Client+11.0
 
 .. _SQLAlchemy: http://docs.sqlalchemy.org/en/latest/core/engines.html#database-urls
 
@@ -118,6 +157,13 @@ don't read your client character set information from .my.cnf.  You need
 to specify it in the connection string::
 
     mysql+pymysql://scott:tiger@localhost/foo?charset=utf8
+
+Note that ``impala`` connecion with `impyla`_  for HiveServer2 requires to disable autocommit::
+
+    %config SqlMagic.autocommit=False
+    %sql impala://hserverhost:port/default?kerberos_service_name=hive&auth_mechanism=GSSAPI
+
+.. _impyla: https://github.com/cloudera/impyla
 
 Configuration
 -------------
@@ -134,6 +180,9 @@ only the screen display is truncated.
     In [2]: %config SqlMagic
     SqlMagic options
     --------------
+    SqlMagic.autocommit=<Bool>
+        Current: True
+        Set autocommit mode
     SqlMagic.autolimit=<Int>
         Current: 0
         Automatically limit the size of the returned result sets
@@ -156,6 +205,8 @@ only the screen display is truncated.
         (currently DEFAULT, MSWORD_FRIENDLY, PLAIN_COLUMNS, RANDOM)
 
     In[3]: %config SqlMagic.feedback = False
+
+Please note: if you have autopandas set to true, the displaylimit option will not apply. You can set the pandas display limit by using the pandas ``max_rows`` option as described in the `pandas documentation <http://pandas.pydata.org/pandas-docs/version/0.18.1/options.html#frequently-used-options>`_.
 
 Pandas
 ------
@@ -197,6 +248,28 @@ If you have installed ``matplotlib``, you can use a result set's
 .. image:: https://raw.github.com/catherinedevlin/ipython-sql/master/examples/wordcount.png
    :alt: pie chart of word count of Shakespeare's comedies
 
+Dumping
+-------
+
+Result sets come with a ``.csv(filename=None)`` method.  This generates
+comma-separated text either as a return value (if ``filename`` is not
+specified) or in a file of the given name.
+
+.. code-block:: python
+
+    In[8]: result = %sql SELECT title, totalwords FROM work WHERE genretype = 'c'
+
+    In[9]: result.csv(filename='work.csv')
+
+PostgreSQL features
+-------------------
+
+``psql``-style "backslash" `meta-commands`_ commands (``\d``, ``\dt``, etc.)
+are provided by `PGSpecial`_.
+
+.. _PGSpecial: https://pypi.python.org/pypi/pgspecial
+
+.. _meta-commands: https://www.postgresql.org/docs/9.6/static/app-psql.html#APP-PSQL-META-COMMANDS
 
 Installing
 ----------
@@ -209,13 +282,6 @@ or download from https://github.com/catherinedevlin/ipython-sql and::
 
     cd ipython-sql
     sudo python setup.py install
-
-Dumping
--------
-
-Result sets come with a ``.csv(filename=None)`` method.  This generates
-comma-separated text either as a return value (if ``filename`` is not
-specified) or in a file of the given name.
 
 Development
 -----------
@@ -233,6 +299,11 @@ Credits
 - Mike Wilson for bind variable code
 - Thomas Kluyver and Steve Holden for debugging help
 - Berton Earnshaw for DSN connection syntax
+- Andrés Celis for SQL Server bugfix
+- Michael Erasmus for DataFrame truth bugfix
+- Noam Finkelstein for README clarification
+- Xiaochuan Yu for `<<` operator, syntax colorization
+- Amjith Ramanujam for PGSpecial and incorporating it here
 
 .. _Distribute: http://pypi.python.org/pypi/distribute
 .. _Buildout: http://www.buildout.org/

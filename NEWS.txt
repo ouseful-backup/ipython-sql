@@ -75,7 +75,7 @@ Deleted Plugin import left behind in 0.2.2
   - Proper handling of configuration
 
 * Added .DataFrame(), .pie(), .plot(), and .bar() methods to
-result sets
+  result sets
 
 0.3.0
 -----
@@ -112,3 +112,39 @@ result sets
 -----
 
 * PERSIST pseudo-SQL command added
+
+0.3.5
+-----
+
+* Indentations visible in HTML cells
+* COMMIT each SQL statement immediately - prevent locks
+
+0.3.6
+-----
+
+* Fixed issue #30, commit failures for sqlite (thanks stonebig, jandot)
+
+0.3.7
+-----
+
+* New `column_local_vars` config option submitted by darikg
+* Avoid contaminating user namespace from locals (thanks alope107)
+
+0.3.7.1
+-------
+
+* Avoid "connection busy" error for SQL Server (thanks Andrés Celis)
+
+0.3.8
+-----
+
+* Stop warnings for deprecated use of IPython 3 traitlets in IPython 4 (thanks graphaelli; also stonebig, aebrahim, mccahill)
+* README update for keeping connection info private, from eshilts
+
+0.3.9
+-----
+
+* Fix truth value of DataFrame error (thanks michael-erasmus)
+* `<<` operator (thanks xiaochuanyu)
+* added README example (thanks tanhuil)
+* bugfix in executing column_local_vars (thanks tebeka)
